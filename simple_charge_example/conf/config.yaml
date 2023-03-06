@@ -1,0 +1,19 @@
+
+battery_volume: 60000
+Batch_size : 32
+Lr : 0.01
+Epsilon : 0.9  # greedy policy
+Gamma : 0.9  # reward discount
+Target_replace_iter : 100   # target update frequency
+Memory_capacity : 100
+emission_max_value : 100
+#data:
+#  path: /path/to/data
+#  batch_size: 32
+#model:
+#  type: MLP
+#  num_layers: 2
+#  hidden_size: 64
+#optimizer:
+#  type: Adam
+#  lr: 0.001

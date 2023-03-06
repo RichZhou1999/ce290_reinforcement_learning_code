@@ -106,7 +106,7 @@ for i_episode in range(400):
         a = dqn.choose_action(s)
 
         # take action
-        s_, r, done, tru,info = env.step(a)
+        s_, r, done, tru, info = env.step(a)
         # modify the reward
         x, x_dot, theta, theta_dat = s_
         r1 = (env.x_threshold - abs(x)) / env.x_threshold - 0.8

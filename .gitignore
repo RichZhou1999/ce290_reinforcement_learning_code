@@ -2,3 +2,4 @@
 ./simple_charge_example/test.py
 *test.py
 ./simple_charge_example/trained_model.pt
+./simple_charge_example/outputs

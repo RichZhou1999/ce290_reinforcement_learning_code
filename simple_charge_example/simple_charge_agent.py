@@ -19,7 +19,7 @@ Epsilon = 0.999  # greedy policy
 Gamma = 1  # reward discount
 Target_replace_iter = 50   # target update frequency
 Memory_capacity = 10000
-episode_num = 3000
+episode_num = 5000
 epsilion_increase_value = (1-Epsilon)/episode_num
 emission_max_value = 100
 
@@ -112,7 +112,6 @@ class DQN(object):
         q_next = self.target_net(b_s_).detach()
         q_target = b_r + Gamma * q_next.max(1)[0].view(Batch_size, 1)
         loss = self.loss_func(q_eval, q_target)
-
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
@@ -127,7 +126,7 @@ def get_reward(time, a, I_max, emission_max_value):
 
     current = min(I_max, current_list[a])
     # reward = (max_y - y[int(time)])/max_y * current * step / 60
-    reward = -y[int(time)] * current* step / 60
+    reward = -y[int(time)] * current * step / 60
     # reward = -(max_y - y[int(time)])/max_y * current
     # print("_____________")
     # print("reward:", reward)

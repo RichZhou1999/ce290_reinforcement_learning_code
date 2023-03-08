@@ -10,6 +10,8 @@ from simple_charge_env import max_current,current_interval, step, start_time_max
 import dill as pickle
 import glob
 import os
+from pathlib import Path
+
 env = Simple_charge_env()
 N_actions = env.action_space.n
 N_states = env.observation_space.shape[0]
@@ -42,7 +44,10 @@ class Net(nn.Module):
 
 predict_net = Net()
 predict_net.load_state_dict(torch.load("./trained_model.pt"))
-
+my_file = Path("./trained_model.pt")
+if my_file.is_file():
+    predict_net.load_state_dict(torch.load("./trained_model.pt"))
+    print("successfully loaded")
 
 def count_pkl_file_number(dir_path=output_dir):
     pkl_files = glob.glob(os.path.join(dir_path, '*.pkl'))
@@ -50,23 +55,23 @@ def count_pkl_file_number(dir_path=output_dir):
     return num_pkl_files
 
 
-def get_reward(time, a, I_max, emission_max_value):
-    time = time % start_time_max
-    x = np.linspace(0, int(start_time_max), int(start_time_max+1))
-    y = emission_max_value/((start_time_max/2)**2) * (x-(start_time_max/2))**2
-    max_y = y[0]
-    current_list = np.linspace(0, max_current, int(max_current/current_interval) + 1)
-
-    current = min(I_max, current_list[a])
-    reward = (max_y - y[int(time)])/max_y * current * step/60
-    print("_____________")
-    print("reward:", reward)
-    print("time:", time)
-    print("emission:", y[int(time)])
-    print("max_y:", max_y)
-    print("current:", current)
-    print("_____________")
-    return reward
+# def get_reward(time, a, I_max, emission_max_value):
+#     time = time % start_time_max
+#     x = np.linspace(0, int(start_time_max), int(start_time_max+1))
+#     y = emission_max_value/((start_time_max/2)**2) * (x-(start_time_max/2))**2
+#     max_y = y[0]
+#     current_list = np.linspace(0, max_current, int(max_current/current_interval) + 1)
+#
+#     current = min(I_max, current_list[a])
+#     reward = (max_y - y[int(time)])/max_y * current * step/60
+#     print("_____________")
+#     print("reward:", reward)
+#     print("time:", time)
+#     print("emission:", y[int(time)])
+#     print("max_y:", max_y)
+#     print("current:", current)
+#     print("_____________")
+#     return reward
 
 
 for i_episode in range(1):
@@ -98,7 +103,7 @@ for i_episode in range(1):
         # x, x_dot, theta, theta_dat = s_
         # r1 = (env.x_threshold - abs(x)) / env.x_threshold - 0.8
         # r2 = (env.theta_threshold_radians - abs(theta)) / env.theta_threshold_radians - 0.5
-        r = get_reward(current_time, action, I_max, 100)
+        # r = get_reward(current_time, action, I_max, 100)
         # r = r1 + r2
 
         # dqn.store_transition(s, a, r, s_)

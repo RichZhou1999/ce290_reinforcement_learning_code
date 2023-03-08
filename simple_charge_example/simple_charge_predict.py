@@ -5,7 +5,7 @@ import torch.optim as optim
 from torch.autograd import Variable
 import torch.nn.functional as F
 import torch.nn as nn
-from  simple_charge_env import Simple_charge_env
+from simple_charge_env import Simple_charge_env
 from simple_charge_env import max_current,current_interval, step, start_time_max, step
 import dill as pickle
 import glob
@@ -70,11 +70,11 @@ def get_reward(time, a, I_max, emission_max_value):
 
 
 for i_episode in range(1):
-    s = env.reset()
-    # s = env.reset_with_values(0.6159713063120908,
-    #                           0.9871365930818221,
-    #                           1386.0,
-    #                           2863)
+    # s = env.reset()
+    s = env.reset_with_values(0.2159713063120908,
+                              0.6871365930818221,
+                              0,
+                              144)
     current_soc, target_soc, start_time, end_time, current_time, current_power_limit, I_max = s
     start_soc = current_soc
     print(i_episode)
@@ -84,7 +84,9 @@ for i_episode in range(1):
         # env.render(mode = "human")
         x = Variable(torch.unsqueeze(torch.FloatTensor(s), 0))
         action_value = predict_net.forward(x)
+        print(action_value)
         action = torch.max(action_value, 1)[1].data.numpy()
+        print(action)
         action = action[0]
         action_history.append(action)
         # a = dqn.choose_action(s)
@@ -106,6 +108,12 @@ for i_episode in range(1):
         #     if done:
         #         print('Ep: ', i_episode,
         #               '| Ep_r: ', round(ep_r, 2))
+        # print("start_soc: ", start_soc)
+        # print("current_soc: ", current_soc)
+        # print("target_soc: ", target_soc)
+        # print("start_time: ", start_time)
+        # print("current_time: ", current_time)
+        # print("end_time: ", end_time)
         print("current_soc: ", current_soc)
         if done:
             print("ep_r:", ep_r)

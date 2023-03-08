@@ -8,18 +8,19 @@ import gym
 import hydra
 from omegaconf import DictConfig, OmegaConf
 from  simple_charge_env import Simple_charge_env
-from simple_charge_env import max_current,current_interval, step, start_time_max, step
+from simple_charge_env import max_current,current_interval,  start_time_max, step,battery_volume
 from pathlib import Path
 
 
 # parameters
-Batch_size = 32
-Lr = 1
-Epsilon = 0.05  # greedy policy
-Gamma = 0.99  # reward discount
+Batch_size = 64
+Lr = 0.0001
+Epsilon = 0.999  # greedy policy
+Gamma = 1  # reward discount
 Target_replace_iter = 50   # target update frequency
-Memory_capacity = 2000
-
+Memory_capacity = 10000
+episode_num = 3000
+epsilion_increase_value = (1-Epsilon)/episode_num
 emission_max_value = 100
 
 env = Simple_charge_env()
@@ -68,15 +69,17 @@ class DQN(object):
         self.optimizer = optim.Adam(self.eval_net.parameters(), lr=Lr)
         self.loss_func = nn.MSELoss()
 
-    def choose_action(self, x):
+    def choose_action(self, x, cur_episode_num=0):
         # print("x:", x[0])
         # print(len(x[0]))
         if type(x) == tuple:
             x = x[0]
         x = Variable(torch.unsqueeze(torch.FloatTensor(x), 0))
-        if np.random.uniform() < Epsilon:
+        if np.random.uniform() < Epsilon + epsilion_increase_value * cur_episode_num:
             action_value = self.eval_net.forward(x)
+            # print(action_value)
             action = torch.max(action_value, 1)[1].data.numpy()
+            # print(action)
             action = action[0]
         else:
             action = np.random.randint(0, N_actions)
@@ -123,7 +126,9 @@ def get_reward(time, a, I_max, emission_max_value):
     current_list = np.linspace(0, max_current, int(max_current/current_interval) + 1)
 
     current = min(I_max, current_list[a])
-    reward = (max_y - y[int(time)])/max_y * current * step/60
+    # reward = (max_y - y[int(time)])/max_y * current * step / 60
+    reward = -y[int(time)] * current* step / 60
+    # reward = -(max_y - y[int(time)])/max_y * current
     # print("_____________")
     # print("reward:", reward)
     # print("time:", time)
@@ -138,7 +143,9 @@ def get_reward(time, a, I_max, emission_max_value):
 def run_experiment(save_model= True):
     dqn = DQN()
     print('\nCollecting experience...')
-    for i_episode in range(10000):
+    current_history_lists = []
+    for i_episode in range(episode_num):
+        current_history_list = []
         # s = env.reset()
         s = env.reset_with_values(0.2159713063120908,
                                   0.6871365930818221,
@@ -150,7 +157,8 @@ def run_experiment(save_model= True):
         ep_r = 0
         while True:
             # env.render(mode = "human")
-            a = dqn.choose_action(s)
+            a = dqn.choose_action(s, i_episode)
+            current_history_list.append(a)
             # take action
             s_, r, done, tru, info = env.step(a)
             # modify the reward
@@ -159,6 +167,9 @@ def run_experiment(save_model= True):
             # r1 = (env.x_threshold - abs(x)) / env.x_threshold - 0.8
             # r2 = (env.theta_threshold_radians - abs(theta)) / env.theta_threshold_radians - 0.5
             r = get_reward(current_time, a, I_max, emission_max_value)
+            if done:
+                if current_soc < target_soc:
+                    r += abs(target_soc - current_soc) * emission_max_value * battery_volume * -1
             # r = r1 + r2
 
             dqn.store_transition(s, a, r, s_)
@@ -176,6 +187,7 @@ def run_experiment(save_model= True):
                 print("start_time: ", start_time)
                 print("current_time: ", current_time)
                 print("end_time: ", end_time)
+                print("current_history_list:",current_history_list)
                 break
             s = s_
     if save_model:

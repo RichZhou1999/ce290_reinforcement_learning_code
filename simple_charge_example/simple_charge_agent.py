@@ -23,7 +23,13 @@ episode_num = 3000
 epsilion_increase_value = (1-Epsilon)/episode_num
 emission_max_value = 100
 
+
+# @hydra.main(config_path="conf", config_name="env")
+# def generate_env(cfg):
+#     global env
+#     env = Simple_charge_env(**cfg)
 env = Simple_charge_env()
+# generate_env()
 
 # env = gym.make('CartPole-v0')
 # env = env.unwrapped
@@ -31,8 +37,8 @@ N_actions = env.action_space.n
 N_states = env.observation_space.shape[0]
 # ENV_A_SHAPE = 0 if isinstance(env.action_space.sample(), int) else env.action_space.sample().shape
 
-voltage = 1
-resistance  = 0
+voltage = 400
+resistance = 1
 
 class Net(nn.Module):
     def __init__(self):
@@ -128,7 +134,7 @@ def get_reward(time, a, I_max, emission_max_value):
 
     current = min(I_max, current_list[a])
     # reward = (max_y - y[int(time)])/max_y * current * step / 60
-    reward = -y[int(time)] * (current*voltage + current*current*resistance) * step / 60
+    reward = -y[int(time)] * (current + current*current*resistance/voltage) * step / 60
     # reward = -y[int(time)] * current * step / 60
     # reward = -(max_y - y[int(time)])/max_y * current
     # print("_____________")
@@ -174,7 +180,7 @@ def run_experiment(save_model= True):
             #         r += abs(target_soc - current_soc) * emission_max_value * battery_volume * -1
             if done:
                 if current_soc < target_soc:
-                    r += abs(target_soc - current_soc) * emission_max_value * battery_volume * -1 * (voltage+I_max*resistance)
+                    r += abs(target_soc - current_soc) * emission_max_value * battery_volume * -1 * (1+I_max*resistance/voltage)
 
             # r = r1 + r2
 
@@ -199,6 +205,14 @@ def run_experiment(save_model= True):
     if save_model:
         torch.save(dqn.target_net.state_dict(), "./trained_model.pt")
 
+
+
+
 run_experiment()
+
+
+# @hydra.main(config_path="conf", config_name="env")
+# def run(cfg):
+#     run_experiment()
 # env.close()
 

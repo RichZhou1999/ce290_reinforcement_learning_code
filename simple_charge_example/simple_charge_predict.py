@@ -75,11 +75,11 @@ def count_pkl_file_number(dir_path=output_dir):
 
 
 for i_episode in range(1):
-    # s = env.reset()
-    s = env.reset_with_values(0.2159713063120908,
-                              0.6871365930818221,
-                              0,
-                              144)
+    s = env.reset()
+    # s = env.reset_with_values(0.2159713063120908,
+    #                           0.6871365930818221,
+    #                           0,
+    #                           144)
     current_soc, target_soc, start_time, end_time, current_time, current_power_limit, I_max = s
     start_soc = current_soc
     print(i_episode)

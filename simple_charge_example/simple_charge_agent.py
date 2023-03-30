@@ -15,11 +15,11 @@ from pathlib import Path
 # parameters
 Batch_size = 64
 Lr = 0.0001
-Epsilon = 0.999  # greedy policy
-Gamma = 1  # reward discount
+Epsilon = 0.99  # greedy policy
+Gamma = 0.99  # reward discount
 Target_replace_iter = 50   # target update frequency
 Memory_capacity = 10000
-episode_num = 3000
+episode_num = 5000
 epsilion_increase_value = (1-Epsilon)/episode_num
 emission_max_value = 100
 
@@ -125,10 +125,14 @@ class DQN(object):
         self.optimizer.step()
 
 
+
+x = np.linspace(0, int(start_time_max), int(start_time_max+1))
+y = emission_max_value/((start_time_max/2)**2) * (x-(start_time_max/2))**2
+
 def get_reward(time, a, I_max, emission_max_value):
     time = time % start_time_max
-    x = np.linspace(0, int(start_time_max), int(start_time_max+1))
-    y = emission_max_value/((start_time_max/2)**2) * (x-(start_time_max/2))**2
+    # x = np.linspace(0, int(start_time_max), int(start_time_max+1))
+    # y = emission_max_value/((start_time_max/2)**2) * (x-(start_time_max/2))**2
     max_y = y[0]
     current_list = np.linspace(0, max_current, int(max_current/current_interval) + 1)
 
@@ -161,7 +165,6 @@ def run_experiment(save_model= True):
                                   144)
         current_soc, target_soc, start_time, end_time, current_time, current_power_limit, I_max = s
         start_soc = current_soc
-        print(i_episode)
         ep_r = 0
         while True:
             # env.render(mode = "human")
@@ -180,7 +183,8 @@ def run_experiment(save_model= True):
             #         r += abs(target_soc - current_soc) * emission_max_value * battery_volume * -1
             if done:
                 if current_soc < target_soc:
-                    r += abs(target_soc - current_soc) * emission_max_value * battery_volume * -1 * (1+I_max*resistance/voltage)
+                    r += abs(target_soc - current_soc) * emission_max_value * battery_volume * -1 *(1 + max_current * resistance/voltage)
+
 
             # r = r1 + r2
 
@@ -188,11 +192,10 @@ def run_experiment(save_model= True):
             ep_r += r
             if dqn.memory_counter > Memory_capacity:
                 dqn.learn()
-                if done:
+                if done and i_episode % 1000 ==0:
                     print('Ep: ', i_episode,
                           '| Ep_r: ', round(ep_r, 2))
-
-            if done:
+            if done and i_episode % 1000 ==0:
                 print("start_soc: ", start_soc)
                 print("current_soc: ", current_soc)
                 print("target_soc: ", target_soc)
@@ -201,7 +204,12 @@ def run_experiment(save_model= True):
                 print("end_time: ", end_time)
                 print("current_history_list:",current_history_list)
                 break
+            if done:
+                break
             s = s_
+        if i_episode % 5000 == 0:
+            torch.save(dqn.target_net.state_dict(), "./trained_model.pt")
+            print("save successfully")
     if save_model:
         torch.save(dqn.target_net.state_dict(), "./trained_model.pt")
 

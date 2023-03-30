@@ -19,7 +19,7 @@ Epsilon = 0.999  # greedy policy
 Gamma = 1  # reward discount
 Target_replace_iter = 50   # target update frequency
 Memory_capacity = 10000
-episode_num = 5000
+episode_num = 3000
 epsilion_increase_value = (1-Epsilon)/episode_num
 emission_max_value = 100
 
@@ -31,6 +31,8 @@ N_actions = env.action_space.n
 N_states = env.observation_space.shape[0]
 # ENV_A_SHAPE = 0 if isinstance(env.action_space.sample(), int) else env.action_space.sample().shape
 
+voltage = 1
+resistance  = 0
 
 class Net(nn.Module):
     def __init__(self):
@@ -126,7 +128,8 @@ def get_reward(time, a, I_max, emission_max_value):
 
     current = min(I_max, current_list[a])
     # reward = (max_y - y[int(time)])/max_y * current * step / 60
-    reward = -y[int(time)] * current * step / 60
+    reward = -y[int(time)] * (current*voltage + current*current*resistance) * step / 60
+    # reward = -y[int(time)] * current * step / 60
     # reward = -(max_y - y[int(time)])/max_y * current
     # print("_____________")
     # print("reward:", reward)
@@ -166,9 +169,13 @@ def run_experiment(save_model= True):
             # r1 = (env.x_threshold - abs(x)) / env.x_threshold - 0.8
             # r2 = (env.theta_threshold_radians - abs(theta)) / env.theta_threshold_radians - 0.5
             r = get_reward(current_time, a, I_max, emission_max_value)
+            # if done:
+            #     if current_soc < target_soc:
+            #         r += abs(target_soc - current_soc) * emission_max_value * battery_volume * -1
             if done:
                 if current_soc < target_soc:
-                    r += abs(target_soc - current_soc) * emission_max_value * battery_volume * -1
+                    r += abs(target_soc - current_soc) * emission_max_value * battery_volume * -1 * (voltage+I_max*resistance)
+
             # r = r1 + r2
 
             dqn.store_transition(s, a, r, s_)

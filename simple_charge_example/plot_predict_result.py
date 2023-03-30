@@ -5,7 +5,7 @@ from matplotlib.colors import ListedColormap
 
 
 height = 10
-pkl_file = './predict_output/predict_0.pkl'
+pkl_file = './predict_output/predict_3.pkl'
 
 with open(pkl_file, 'rb') as f:
     result = pickle.load(f)

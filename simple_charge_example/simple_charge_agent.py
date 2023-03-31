@@ -10,16 +10,16 @@ from omegaconf import DictConfig, OmegaConf
 from  simple_charge_env import Simple_charge_env
 from simple_charge_env import max_current,current_interval,  start_time_max, step,battery_volume
 from pathlib import Path
-
+import random
 
 # parameters
 Batch_size = 64
 Lr = 0.0001
-Epsilon = 0.99  # greedy policy
-Gamma = 0.99  # reward discount
+Epsilon = 0.995  # greedy policy
+Gamma = 1  # reward discount
 Target_replace_iter = 50   # target update frequency
 Memory_capacity = 10000
-episode_num = 5000
+episode_num = 10000
 epsilion_increase_value = (1-Epsilon)/episode_num
 emission_max_value = 100
 
@@ -38,7 +38,7 @@ N_states = env.observation_space.shape[0]
 # ENV_A_SHAPE = 0 if isinstance(env.action_space.sample(), int) else env.action_space.sample().shape
 
 voltage = 400
-resistance = 1
+resistance = 0
 
 class Net(nn.Module):
     def __init__(self):
@@ -153,16 +153,53 @@ def get_reward(time, a, I_max, emission_max_value):
 
 
 def run_experiment(save_model= True):
+
+    possible_starting_state = [(0.2159713063120908,
+                                0.6871365930818221,
+                                0,
+                                144),
+                               (0.2159713063120908,
+                                0.6871365930818221,
+                                90,
+                                254),
+                               (0.6,
+                                0.9,
+                                90,
+                                180),
+                               (0.2,
+                                0.6,
+                                50,
+                                90),
+                               (0.2,
+                                0.7,
+                                50,
+                                70),
+                               (0.32,
+                                0.5,
+                                32,
+                                176
+                               ),
+                               (0.12,
+                                  0.49,
+                                  142,
+                                  291),
+                               (0.2,
+                                0.81,
+                                91,
+                                238),
+                               ]
     dqn = DQN()
     print('\nCollecting experience...')
     current_history_lists = []
     for i_episode in range(episode_num):
+        random_s = random.choice(possible_starting_state)
         current_history_list = []
         # s = env.reset()
-        s = env.reset_with_values(0.2159713063120908,
-                                  0.6871365930818221,
-                                  0,
-                                  144)
+        s = env.reset_with_values(*random_s)
+        # s = env.reset_with_values(0.2159713063120908,
+        #                           0.6871365930818221,
+        #                           0,
+        #                           144)
         current_soc, target_soc, start_time, end_time, current_time, current_power_limit, I_max = s
         start_soc = current_soc
         ep_r = 0
@@ -183,7 +220,7 @@ def run_experiment(save_model= True):
             #         r += abs(target_soc - current_soc) * emission_max_value * battery_volume * -1
             if done:
                 if current_soc < target_soc:
-                    r += abs(target_soc - current_soc) * emission_max_value * battery_volume * -1 *(1 + max_current * resistance/voltage)
+                    r += -abs(target_soc - current_soc) * emission_max_value * battery_volume *(1 + max_current * resistance/voltage)
 
 
             # r = r1 + r2

@@ -75,13 +75,18 @@ def count_pkl_file_number(dir_path=output_dir):
 
 
 for i_episode in range(1):
-    s = env.reset()
+    # s = env.reset()
+    s = env.reset_with_values(0.2159713063120908,
+                              0.6871365930818221,
+                              0,
+                              144)
     # s = env.reset_with_values(0.2159713063120908,
     #                           0.6871365930818221,
-    #                           0,
-    #                           144)
-    current_soc, target_soc, start_time, end_time, current_time, current_power_limit, I_max = s
+    #                           143,
+    #                           287)
+    current_soc, target_soc, current_time, end_time,I_max = s
     start_soc = current_soc
+    start_time = current_time
     print(i_episode)
     action_history = []
     ep_r = 0
@@ -99,7 +104,7 @@ for i_episode in range(1):
         # take action
         s_, r, done, tru, info = env.step(action)
         # modify the reward
-        current_soc, target_soc, start_time, end_time, current_time, current_power_limit, I_max = s_
+        current_soc, target_soc, current_time, end_time, I_max = s_
         # x, x_dot, theta, theta_dat = s_
         # r1 = (env.x_threshold - abs(x)) / env.x_threshold - 0.8
         # r2 = (env.theta_threshold_radians - abs(theta)) / env.theta_threshold_radians - 0.5

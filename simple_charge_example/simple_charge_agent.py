@@ -15,13 +15,13 @@ import random
 # parameters
 Batch_size = 64
 Lr = 0.0001
-Epsilon = 0.995  # greedy policy
+Epsilon = 0.999 # greedy policy
 Gamma = 1  # reward discount
 Target_replace_iter = 50   # target update frequency
 Memory_capacity = 10000
-episode_num = 10000
+episode_num = 5000
 epsilion_increase_value = (1-Epsilon)/episode_num
-emission_max_value = 100
+emission_max_value = 1
 
 
 # @hydra.main(config_path="conf", config_name="env")
@@ -82,6 +82,7 @@ class DQN(object):
         # print(len(x[0]))
         if type(x) == tuple:
             x = x[0]
+
         x = Variable(torch.unsqueeze(torch.FloatTensor(x), 0))
         if np.random.uniform() < Epsilon + epsilion_increase_value * cur_episode_num:
             action_value = self.eval_net.forward(x)
@@ -126,19 +127,19 @@ class DQN(object):
 
 
 
-x = np.linspace(0, int(start_time_max), int(start_time_max+1))
+x = np.linspace(0, int(start_time_max)-1, int(start_time_max))
 y = emission_max_value/((start_time_max/2)**2) * (x-(start_time_max/2))**2
 
 def get_reward(time, a, I_max, emission_max_value):
     time = time % start_time_max
     # x = np.linspace(0, int(start_time_max), int(start_time_max+1))
     # y = emission_max_value/((start_time_max/2)**2) * (x-(start_time_max/2))**2
-    max_y = y[0]
+    # max_y = y[0]
     current_list = np.linspace(0, max_current, int(max_current/current_interval) + 1)
 
     current = min(I_max, current_list[a])
     # reward = (max_y - y[int(time)])/max_y * current * step / 60
-    reward = -y[int(time)] * (current + current*current*resistance/voltage) * step / 60
+    reward = -y[int(time)] * (current + 2*current*resistance/voltage) * step / 60
     # reward = -y[int(time)] * current * step / 60
     # reward = -(max_y - y[int(time)])/max_y * current
     # print("_____________")
@@ -195,12 +196,21 @@ def run_experiment(save_model= True):
         random_s = random.choice(possible_starting_state)
         current_history_list = []
         # s = env.reset()
-        s = env.reset_with_values(*random_s)
+        # s = env.reset_with_values(*random_s)
+        s = env.reset_with_values(0.2159713063120908,
+                                  0.6871365930818221,
+                                  0,
+                                  144)
         # s = env.reset_with_values(0.2159713063120908,
         #                           0.6871365930818221,
-        #                           0,
-        #                           144)
-        current_soc, target_soc, start_time, end_time, current_time, current_power_limit, I_max = s
+        #                           144,
+        #                           287)
+        # s = env.reset_with_values(0.2159713063120908,
+        #                           0.6871365930818221,
+        #                           143,
+        #                           287)
+        # current_soc, target_soc, start_time, end_time, current_time, current_power_limit, I_max = s
+        current_soc, target_soc, current_time, end_time, I_max = s
         start_soc = current_soc
         ep_r = 0
         while True:
@@ -210,7 +220,8 @@ def run_experiment(save_model= True):
             # take action
             s_, r, done, tru, info = env.step(a)
             # modify the reward
-            current_soc, target_soc, start_time, end_time, current_time, current_power_limit, I_max = s_
+            current_soc, target_soc, current_time, end_time, I_max = s_
+            # current_soc, target_soc, start_time, end_time, current_time, current_power_limit, I_max = s_
             # x, x_dot, theta, theta_dat = s_
             # r1 = (env.x_threshold - abs(x)) / env.x_threshold - 0.8
             # r2 = (env.theta_threshold_radians - abs(theta)) / env.theta_threshold_radians - 0.5
@@ -222,21 +233,20 @@ def run_experiment(save_model= True):
                 if current_soc < target_soc:
                     r += -abs(target_soc - current_soc) * emission_max_value * battery_volume *(1 + max_current * resistance/voltage)
 
-
             # r = r1 + r2
 
             dqn.store_transition(s, a, r, s_)
             ep_r += r
             if dqn.memory_counter > Memory_capacity:
                 dqn.learn()
-                if done and i_episode % 1000 ==0:
+                if done and i_episode % 5 ==0:
                     print('Ep: ', i_episode,
                           '| Ep_r: ', round(ep_r, 2))
-            if done and i_episode % 1000 ==0:
+            if done and i_episode % 5 ==0:
                 print("start_soc: ", start_soc)
                 print("current_soc: ", current_soc)
                 print("target_soc: ", target_soc)
-                print("start_time: ", start_time)
+                # print("start_time: ", start_time)
                 print("current_time: ", current_time)
                 print("end_time: ", end_time)
                 print("current_history_list:",current_history_list)

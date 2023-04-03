@@ -50,8 +50,12 @@ class Simple_charge_env:
 
         self.action_space = spaces.Discrete(int((max_current-min_current)/current_interval))
 
-        self.observation_space = spaces.Box(-np.array([0, 0, 0, 0, 0, 0, 0]),
-                                            np.array([1, 1, 1e5, 1e5, 1e5, 1e5, 1e5]), dtype=np.float32)
+        # self.observation_space = spaces.Box(-np.array([0, 0, 0, 0, 0, 0, 0]),
+        #                                     np.array([1, 1, 1e5, 1e5, 1e5, 1e5, 1e5]), dtype=np.float32)
+
+        self.observation_space = spaces.Box(-np.array([0, 0, 0, 0,0]),
+                                            np.array([ 1e5, 1e5, 1e5, 1e5,1e5]), dtype=np.float32)
+
 
         # self.voltage = 0.4
 
@@ -96,14 +100,23 @@ class Simple_charge_env:
         self.voltage = self.get_voltage()
         self.I_max = self.get_I_limit()
 
+
         return np.array([self.current_soc,
                          self.target_soc,
-                         self.start_time,
-                         self.end_time,
                          self.current_time,
-                         self.current_power_limit,
+                         self.end_time,
                          self.I_max
                          ])
+
+
+        # return np.array([self.current_soc,
+        #                  self.target_soc,
+        #                  self.start_time,
+        #                  self.end_time,
+        #                  self.current_time,
+        #                  self.current_power_limit,
+        #                  self.I_max
+        #                  ])
 
     def reset_with_values(self,
                           current_soc,
@@ -121,14 +134,23 @@ class Simple_charge_env:
         self.voltage = self.get_voltage()
         self.I_max = self.get_I_limit()
 
+
         return np.array([self.current_soc,
                          self.target_soc,
-                         self.start_time,
-                         self.end_time,
                          self.current_time,
-                         self.current_power_limit,
+                         self.end_time,
                          self.I_max
                          ])
+
+
+        # return np.array([self.current_soc,
+        #                  self.target_soc,
+        #                  self.start_time,
+        #                  self.end_time,
+        #                  self.current_time,
+        #                  self.current_power_limit,
+        #                  self.I_max
+        #                  ])
 
     def step(self, action):
         current = self.current_list[action]
@@ -139,17 +161,26 @@ class Simple_charge_env:
         self.current_power_limit = self.get_power_limit()
         self.voltage = self.get_voltage()
         self.I_max = self.get_I_limit()
+
         observation = np.array([self.current_soc,
-                                 self.target_soc,
-                                 self.start_time,
-                                 self.end_time,
-                                 self.current_time,
-                                 self.current_power_limit,
-                                 self.I_max
-                                 ])
+                         self.target_soc,
+                         self.current_time,
+                         self.end_time,
+                         self.I_max
+                         ])
+
+        # observation = np.array([self.current_soc,
+        #                          self.target_soc,
+        #                          self.start_time,
+        #                          self.end_time,
+        #                          self.current_time,
+        #                          self.current_power_limit,
+        #                          self.I_max
+        #                          ])
         reward = 0
         terminated = False
         if ((self.current_soc >=  self.target_soc) or (self.end_time == self.current_time)):
+
             terminated = True
 
         info = {}

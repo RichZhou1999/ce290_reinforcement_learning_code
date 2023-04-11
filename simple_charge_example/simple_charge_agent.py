@@ -234,9 +234,9 @@ def run_experiment(save_model = True):
             # if done:
             #     if current_soc < target_soc:
             #         r += abs(target_soc - current_soc) * emission_max_value * battery_ah * -1
-            if done:
-                if current_soc < target_soc:
-                    r += -abs(target_soc - current_soc) * emission_max_value * battery_ah *(1 + max_current * resistance/voltage)
+            # if done:
+            #     if current_soc < target_soc:
+            #         r += -abs(target_soc - current_soc) * emission_max_value * battery_ah *(1 + max_current * resistance/voltage)
 
             # r = r1 + r2
 

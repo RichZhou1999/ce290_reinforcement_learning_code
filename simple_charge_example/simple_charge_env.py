@@ -19,26 +19,27 @@ from gym import logger, spaces
     action_space: 0 - 100 amp ( with the interval of 0.5A)      
 '''
 
-max_current = 25
-min_current = 0
-current_interval = 0.5
-
-
-#time interval between change the current (I)
+# TIME PARAMETERS
 step = 10
-
 total_time = 1440
-
 start_time_max = total_time / step
 end_time_max = total_time / step * 2
+min_charge_intervals = 60 / step
 
-min_charge_intervals = 60/step
+# BATTERY PARAMETERS
+max_current = 25                                # A
+min_current = 0                                 # A
+current_interval = 1                            # A
+voltage = 400                                   # V
+battery_kwh = 60                                # kWh
+battery_ah = battery_kwh * 1e3 / voltage        # Ah
+resistance = 1                                  # Ohm
+power_boundary = 10 * 1e3                       # kW
+power_boundary_decrease_point = 0.8
 
-battery_volume = 60 * 1000 / 400 #amp
-resistance = 1
-power_boundary = 10* 1000
-power_boundary_decrease_point= 0.8
-voltage = 400
+# PRICE PARAMETERS
+emission_max_value = 1                          # $/kWh
+
 class Simple_charge_env:
     def __init__(self):
 
@@ -71,7 +72,7 @@ class Simple_charge_env:
 
         self.charge_interval = step
 
-        self.battery_volume = float(battery_volume)
+        self.battery_ah = float(battery_ah)
         self.voltage = voltage
 
 
@@ -87,7 +88,12 @@ class Simple_charge_env:
     def get_I_limit(self):
         # I = (-U + sqrt(U**2+8*R*P))/(4R)
         return (-self.voltage + np.sqrt(self.voltage**2 + 8 * self.resistance * self.current_power_limit))/(4*self.resistance)
-
+    
+    def get_per_kwh_price(self):
+        """get the dynamic electricity price at current time"""
+        t = self.current_time % start_time_max
+        return emission_max_value / ((start_time_max/2)**2) * (t - (start_time_max/2))**2
+         
     def reset(self):
         self.current_soc = np.random.uniform(0, 0.8)
         self.target_soc = np.random.uniform(self.current_soc + 0.1, 1)
@@ -99,6 +105,7 @@ class Simple_charge_env:
         self.current_power_limit = self.get_power_limit()
         self.voltage = self.get_voltage()
         self.I_max = self.get_I_limit()
+        self.price = self.get_per_kwh_price()
 
 
         return np.array([self.current_soc,
@@ -133,6 +140,7 @@ class Simple_charge_env:
         self.current_power_limit = self.get_power_limit()
         self.voltage = self.get_voltage()
         self.I_max = self.get_I_limit()
+        self.price = self.get_per_kwh_price()
 
 
         return np.array([self.current_soc,
@@ -156,11 +164,12 @@ class Simple_charge_env:
         current = self.current_list[action]
         if current > self.I_max:
             current = self.I_max
-        self.current_soc += self.charge_interval * current /self.battery_volume / 60
+        self.current_soc += self.charge_interval * current / self.battery_ah / 60
         self.current_time += 1
         self.current_power_limit = self.get_power_limit()
         self.voltage = self.get_voltage()
         self.I_max = self.get_I_limit()
+        self.price = self.get_per_kwh_price()
 
         observation = np.array([self.current_soc,
                          self.target_soc,

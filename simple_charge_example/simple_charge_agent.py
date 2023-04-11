@@ -8,7 +8,7 @@ import gym
 import hydra
 from omegaconf import DictConfig, OmegaConf
 from  simple_charge_env import Simple_charge_env
-from simple_charge_env import max_current,current_interval,  start_time_max, step,battery_volume
+from simple_charge_env import max_current,current_interval, start_time_max, step, battery_ah
 from pathlib import Path
 import random
 
@@ -153,7 +153,7 @@ def get_reward(time, a, I_max, emission_max_value):
 
 
 
-def run_experiment(save_model= True):
+def run_experiment(save_model = True):
 
     possible_starting_state = [(0.2159713063120908,
                                 0.6871365930818221,
@@ -228,10 +228,10 @@ def run_experiment(save_model= True):
             r = get_reward(current_time, a, I_max, emission_max_value)
             # if done:
             #     if current_soc < target_soc:
-            #         r += abs(target_soc - current_soc) * emission_max_value * battery_volume * -1
+            #         r += abs(target_soc - current_soc) * emission_max_value * battery_ah * -1
             if done:
                 if current_soc < target_soc:
-                    r += -abs(target_soc - current_soc) * emission_max_value * battery_volume *(1 + max_current * resistance/voltage)
+                    r += -abs(target_soc - current_soc) * emission_max_value * battery_ah *(1 + max_current * resistance/voltage)
 
             # r = r1 + r2
 

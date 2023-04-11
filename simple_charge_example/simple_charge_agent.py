@@ -19,7 +19,7 @@ Epsilon = 0.999 # greedy policy
 Gamma = 1  # reward discount
 Target_replace_iter = 50   # target update frequency
 Memory_capacity = 10000
-episode_num = 5000
+episode_num = 1500
 epsilion_increase_value = (1-Epsilon)/episode_num
 emission_max_value = 1
 
@@ -127,29 +127,29 @@ class DQN(object):
 
 
 
-x = np.linspace(0, int(start_time_max)-1, int(start_time_max))
-y = emission_max_value/((start_time_max/2)**2) * (x-(start_time_max/2))**2
+# x = np.linspace(0, int(start_time_max)-1, int(start_time_max))
+# y = emission_max_value/((start_time_max/2)**2) * (x-(start_time_max/2))**2
 
-def get_reward(time, a, I_max, emission_max_value):
-    time = time % start_time_max
-    # x = np.linspace(0, int(start_time_max), int(start_time_max+1))
-    # y = emission_max_value/((start_time_max/2)**2) * (x-(start_time_max/2))**2
-    # max_y = y[0]
-    current_list = np.linspace(0, max_current, int(max_current/current_interval) + 1)
-
-    current = min(I_max, current_list[a])
-    # reward = (max_y - y[int(time)])/max_y * current * step / 60
-    reward = -y[int(time)] * (current + 2*current*resistance/voltage) * step / 60
-    # reward = -y[int(time)] * current * step / 60
-    # reward = -(max_y - y[int(time)])/max_y * current
-    # print("_____________")
-    # print("reward:", reward)
-    # print("time:", time)
-    # print("emission:", y[int(time)])
-    # print("max_y:", max_y)
-    # print("current:", current)
-    # print("_____________")
-    return reward
+# def get_reward(time, a, I_max, emission_max_value):
+#     time = time % start_time_max
+#     # x = np.linspace(0, int(start_time_max), int(start_time_max+1))
+#     # y = emission_max_value/((start_time_max/2)**2) * (x-(start_time_max/2))**2
+#     # max_y = y[0]
+#     current_list = np.linspace(0, max_current, int(max_current/current_interval) + 1)
+#
+#     current = min(I_max, current_list[a])
+#     # reward = (max_y - y[int(time)])/max_y * current * step / 60
+#     reward = -y[int(time)] * (current + 2*current*resistance/voltage) * step / 60
+#     # reward = -y[int(time)] * current * step / 60
+#     # reward = -(max_y - y[int(time)])/max_y * current
+#     # print("_____________")
+#     # print("reward:", reward)
+#     # print("time:", time)
+#     # print("emission:", y[int(time)])
+#     # print("max_y:", max_y)
+#     # print("current:", current)
+#     # print("_____________")
+#     return reward
 
 
 
@@ -210,7 +210,7 @@ def run_experiment(save_model = True):
         #                           143,
         #                           287)
         # current_soc, target_soc, start_time, end_time, current_time, current_power_limit, I_max = s
-        current_soc, target_soc, current_time, end_time, I_max = s
+        current_soc, target_soc, current_time, end_time, I_max,price = s
         start_soc = current_soc
         ep_r = 0
         while True:
@@ -220,12 +220,14 @@ def run_experiment(save_model = True):
             # take action
             s_, r, done, tru, info = env.step(a)
             # modify the reward
-            current_soc, target_soc, current_time, end_time, I_max = s_
+            current_soc, target_soc, current_time, end_time, I_max, price= s_
             # current_soc, target_soc, start_time, end_time, current_time, current_power_limit, I_max = s_
             # x, x_dot, theta, theta_dat = s_
             # r1 = (env.x_threshold - abs(x)) / env.x_threshold - 0.8
             # r2 = (env.theta_threshold_radians - abs(theta)) / env.theta_threshold_radians - 0.5
-            r = get_reward(current_time, a, I_max, emission_max_value)
+
+            # r = get_reward(current_time, a, I_max, emission_max_value)
+
             # if done:
             #     if current_soc < target_soc:
             #         r += abs(target_soc - current_soc) * emission_max_value * battery_ah * -1

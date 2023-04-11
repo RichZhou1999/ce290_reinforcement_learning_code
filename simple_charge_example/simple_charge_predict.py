@@ -84,7 +84,7 @@ for i_episode in range(1):
     #                           0.6871365930818221,
     #                           143,
     #                           287)
-    current_soc, target_soc, current_time, end_time,I_max = s
+    current_soc, target_soc, current_time, end_time,I_max,price = s
     start_soc = current_soc
     start_time = current_time
     print(i_episode)
@@ -104,7 +104,7 @@ for i_episode in range(1):
         # take action
         s_, r, done, tru, info = env.step(action)
         # modify the reward
-        current_soc, target_soc, current_time, end_time, I_max = s_
+        current_soc, target_soc, current_time, end_time, I_max, price = s_
         # x, x_dot, theta, theta_dat = s_
         # r1 = (env.x_threshold - abs(x)) / env.x_threshold - 0.8
         # r2 = (env.theta_threshold_radians - abs(theta)) / env.theta_threshold_radians - 0.5

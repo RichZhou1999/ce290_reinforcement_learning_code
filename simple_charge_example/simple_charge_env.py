@@ -54,8 +54,8 @@ class Simple_charge_env:
         # self.observation_space = spaces.Box(-np.array([0, 0, 0, 0, 0, 0, 0]),
         #                                     np.array([1, 1, 1e5, 1e5, 1e5, 1e5, 1e5]), dtype=np.float32)
 
-        self.observation_space = spaces.Box(-np.array([0, 0, 0, 0,0]),
-                                            np.array([ 1e5, 1e5, 1e5, 1e5,1e5]), dtype=np.float32)
+        self.observation_space = spaces.Box(-np.array([0, 0, 0, 0,0, 0]),
+                                            np.array([ 1e5, 1e5, 1e5, 1e5,1e5,1e5]), dtype=np.float32)
 
 
         # self.voltage = 0.4
@@ -93,7 +93,36 @@ class Simple_charge_env:
         """get the dynamic electricity price at current time"""
         t = self.current_time % start_time_max
         return emission_max_value / ((start_time_max/2)**2) * (t - (start_time_max/2))**2
-         
+
+    def get_reward(self, a):
+        time = self.current_time % start_time_max
+        I_max = self.I_max
+        x = np.linspace(0, int(start_time_max), int(start_time_max+1))
+        y = emission_max_value/((start_time_max/2)**2) * (x-(start_time_max/2))**2
+
+        # max_y = y[0]
+        current_list = np.linspace(0, max_current, int(max_current / current_interval) + 1)
+
+        current = min(I_max, current_list[a])
+        # reward = (max_y - y[int(time)])/max_y * current * step / 60
+        price = self.get_per_kwh_price()
+        # print(price == y[int(time)])
+        reward = -price * (current + 2 * current * resistance / voltage) * step / 60
+        # reward = -y[int(time)] * (current + 2 * current * resistance / voltage) * step / 60
+
+        return reward
+
+
+    # def get_reward(self, a):
+    #     I_limit = self.get_I_limit()
+    #     price = self.get_per_kwh_price()
+    #     current_list = np.linspace(0, max_current, int(max_current / current_interval) + 1)
+    #
+    #     current = min(I_limit, current_list[a])
+    #     reward = -price * (current + 2 * current * resistance / voltage) * step / 60
+    #
+    #     return reward
+
     def reset(self):
         self.current_soc = np.random.uniform(0, 0.8)
         self.target_soc = np.random.uniform(self.current_soc + 0.1, 1)
@@ -112,7 +141,8 @@ class Simple_charge_env:
                          self.target_soc,
                          self.current_time,
                          self.end_time,
-                         self.I_max
+                         self.I_max,
+                         self.price
                          ])
 
 
@@ -147,7 +177,8 @@ class Simple_charge_env:
                          self.target_soc,
                          self.current_time,
                          self.end_time,
-                         self.I_max
+                         self.I_max,
+                         self.price
                          ])
 
 
@@ -175,7 +206,8 @@ class Simple_charge_env:
                          self.target_soc,
                          self.current_time,
                          self.end_time,
-                         self.I_max
+                         self.I_max,
+                         self.price
                          ])
 
         # observation = np.array([self.current_soc,
@@ -186,7 +218,7 @@ class Simple_charge_env:
         #                          self.current_power_limit,
         #                          self.I_max
         #                          ])
-        reward = 0
+        reward = self.get_reward(action)
         terminated = False
         if ((self.current_soc >=  self.target_soc) or (self.end_time == self.current_time)):
 

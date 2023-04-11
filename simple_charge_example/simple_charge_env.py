@@ -224,7 +224,7 @@ class Simple_charge_env:
 
             terminated = True
             if self.current_soc < self.target_soc:
-                    r += -abs(self.target_soc - self.current_soc) * emission_max_value * battery_ah *(1 + max_current * resistance/voltage)
+                    reward += -abs(self.target_soc - self.current_soc) * emission_max_value * battery_ah *(1 + max_current * resistance/voltage)
 
 
         info = {}

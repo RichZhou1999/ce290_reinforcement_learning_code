@@ -33,6 +33,9 @@ env = Simple_charge_env()
 
 # env = gym.make('CartPole-v0')
 # env = env.unwrapped
+
+
+
 N_actions = env.action_space.n
 N_states = env.observation_space.shape[0]
 # ENV_A_SHAPE = 0 if isinstance(env.action_space.sample(), int) else env.action_space.sample().shape

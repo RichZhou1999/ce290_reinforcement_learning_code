@@ -13,13 +13,13 @@ from pathlib import Path
 import random
 
 # parameters
-Batch_size = 64
-Lr = 0.0001
-Epsilon = 0.999 # greedy policy
+Batch_size = 128
+Lr = 0.001
+Epsilon = 0.99 # greedy policy
 Gamma = 1  # reward discount
-Target_replace_iter = 50   # target update frequency
-Memory_capacity = 10000
-episode_num = 1500
+Target_replace_iter = 100   # target update frequency
+Memory_capacity = 5000
+episode_num = 2000
 epsilion_increase_value = (1-Epsilon)/episode_num
 emission_max_value = 1
 

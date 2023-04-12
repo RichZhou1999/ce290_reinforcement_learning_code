@@ -33,7 +33,7 @@ current_interval = 1                            # A
 voltage = 400                                   # V
 battery_kwh = 60                                # kWh
 battery_ah = battery_kwh * 1e3 / voltage        # Ah
-resistance = 1                                  # Ohm
+resistance = 0                                  # Ohm
 power_boundary = 10 * 1e3                       # kW
 power_boundary_decrease_point = 0.8
 
@@ -87,6 +87,8 @@ class Simple_charge_env:
 
     def get_I_limit(self):
         # I = (-U + sqrt(U**2+8*R*P))/(4R)
+        if self.resistance == 0:
+            return self.current_power_limit/self.voltage
         return (-self.voltage + np.sqrt(self.voltage**2 + 8 * self.resistance * self.current_power_limit))/(4*self.resistance)
     
     def get_per_kwh_price(self):

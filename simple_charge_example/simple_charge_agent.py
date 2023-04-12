@@ -19,7 +19,7 @@ Epsilon = 0.999 # greedy policy
 Gamma = 1  # reward discount
 Target_replace_iter = 50   # target update frequency
 Memory_capacity = 10000
-episode_num = 3000
+episode_num = 1500
 epsilion_increase_value = (1-Epsilon)/episode_num
 emission_max_value = 1
 

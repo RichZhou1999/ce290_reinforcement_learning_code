@@ -17,6 +17,29 @@ N_actions = env.action_space.n
 N_states = env.observation_space.shape[0]
 output_dir = "predict_output"
 
+# class Net(nn.Module):
+#     def __init__(self):
+#         super(Net, self).__init__()
+#         self.fc1 = nn.Linear(N_states, 32)
+#         self.fc1.weight.data.normal_(0, 0.1)
+#         self.fc2 = nn.Linear(32, 64)
+#         self.fc2.weight.data.normal_(0, 0.1)
+#         self.fc3 = nn.Linear(64, 128)
+#         self.fc3.weight.data.normal_(0, 0.1)
+#         self.out = nn.Linear(128, N_actions)
+#         self.out.weight.data.normal_(0, 0.1)
+#
+#     def forward(self, x):
+#         x = self.fc1(x)
+#         x = F.relu(x)
+#         x = self.fc2(x)
+#         x = F.relu(x)
+#         x = self.fc3(x)
+#         x = F.relu(x)
+#         actions_value = self.out(x)
+#         return actions_value
+
+
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
@@ -26,6 +49,8 @@ class Net(nn.Module):
         self.fc2.weight.data.normal_(0, 0.1)
         self.fc3 = nn.Linear(64, 128)
         self.fc3.weight.data.normal_(0, 0.1)
+        self.fc4 = nn.Linear(128, 128)
+        self.fc4.weight.data.normal_(0, 0.1)
         self.out = nn.Linear(128, N_actions)
         self.out.weight.data.normal_(0, 0.1)
 
@@ -36,14 +61,15 @@ class Net(nn.Module):
         x = F.relu(x)
         x = self.fc3(x)
         x = F.relu(x)
+        x = self.fc4(x)
+        x = F.relu(x)
         actions_value = self.out(x)
         return actions_value
 
 
 
-
 predict_net = Net()
-predict_net.load_state_dict(torch.load("./trained_model.pt"))
+# predict_net.load_state_dict(torch.load("./trained_model.pt"))
 my_file = Path("./trained_model.pt")
 if my_file.is_file():
     predict_net.load_state_dict(torch.load("./trained_model.pt"))
@@ -84,7 +110,7 @@ for i_episode in range(1):
     #                           0.6871365930818221,
     #                           143,
     #                           287)
-    current_soc, target_soc, current_time, end_time,I_max = s
+    current_soc, target_soc, current_time, end_time, I_max = s
     start_soc = current_soc
     start_time = current_time
     print(i_episode)

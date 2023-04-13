@@ -18,8 +18,8 @@ Lr = 0.0001
 Epsilon = 0.999 # greedy policy
 Gamma = 1  # reward discount
 Target_replace_iter = 50   # target update frequency
-Memory_capacity = 10000
-episode_num = 5000
+Memory_capacity = 1000
+episode_num = 1000
 epsilion_increase_value = (1-Epsilon)/episode_num
 emission_max_value = 1
 
@@ -49,6 +49,8 @@ class Net(nn.Module):
         self.fc2.weight.data.normal_(0, 0.1)
         self.fc3 = nn.Linear(64, 128)
         self.fc3.weight.data.normal_(0, 0.1)
+        self.fc4 = nn.Linear(128, 128)
+        self.fc4.weight.data.normal_(0, 0.1)
         self.out = nn.Linear(128, N_actions)
         self.out.weight.data.normal_(0, 0.1)
 
@@ -58,6 +60,8 @@ class Net(nn.Module):
         x = self.fc2(x)
         x = F.relu(x)
         x = self.fc3(x)
+        x = F.relu(x)
+        x = self.fc4(x)
         x = F.relu(x)
         actions_value = self.out(x)
         return actions_value
@@ -84,6 +88,7 @@ class DQN(object):
             x = x[0]
 
         x = Variable(torch.unsqueeze(torch.FloatTensor(x), 0))
+
         if np.random.uniform() < Epsilon + epsilion_increase_value * cur_episode_num:
             action_value = self.eval_net.forward(x)
             # print(action_value)
@@ -203,7 +208,7 @@ def run_experiment(save_model= True):
                                   144)
         # s = env.reset_with_values(0.2159713063120908,
         #                           0.6871365930818221,
-        #                           144,
+        #                           143,
         #                           287)
         # s = env.reset_with_values(0.2159713063120908,
         #                           0.6871365930818221,

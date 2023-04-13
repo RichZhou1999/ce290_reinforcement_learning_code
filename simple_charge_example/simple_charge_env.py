@@ -35,7 +35,7 @@ end_time_max = total_time / step * 2
 min_charge_intervals = 60/step
 
 battery_volume = 60 * 1000 / 400 #amp
-resistance = 1
+resistance = 0
 power_boundary = 10* 1000
 power_boundary_decrease_point= 0.8
 voltage = 400
@@ -86,6 +86,8 @@ class Simple_charge_env:
 
     def get_I_limit(self):
         # I = (-U + sqrt(U**2+8*R*P))/(4R)
+        if (self.resistance==0):
+            return self.current_power_limit/self.voltage
         return (-self.voltage + np.sqrt(self.voltage**2 + 8 * self.resistance * self.current_power_limit))/(4*self.resistance)
 
     def reset(self):

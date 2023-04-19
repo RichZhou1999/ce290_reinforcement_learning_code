@@ -446,7 +446,7 @@ class Simple_charge_env:
         current = self.current_list[action]
         if current > self.I_max:
             current = self.I_max
-        self.current_soc += self.charge_interval * current / self.battery_ah / 60
+        self.current_soc += self.charge_interval * current / self.battery_ah / self.battery_kwh
         self.current_time += 1
         self.current_power_limit = self.get_power_limit()
         self.voltage = self.get_voltage()

@@ -262,7 +262,7 @@ end_time_max = total_time / step * 2
 min_charge_intervals = 60 / step
 
 # BATTERY PARAMETERS
-max_current = 25  # A
+max_current = 40  # A
 min_current = 0  # A
 current_interval = 1  # A
 voltage = 400  # V
@@ -286,11 +286,9 @@ class Simple_charge_env:
         self.min_charge_intervals = 60 / self.time_step
 
         # BATTERY PARAMETERS
-        self.max_current = 25  # A
+        self.max_current = 40  # A
         self.min_current = 0  # A
         self.current_interval = 1  # A
-
-
 
         self.current_soc = np.random.uniform(0, 0.8)
         self.target_soc = np.random.uniform(self.current_soc + 0.1, 1)
@@ -408,11 +406,8 @@ class Simple_charge_env:
         #                  self.I_max
         #                  ])
 
-    def reset_with_values(self,
-                          current_soc,
-                          target_soc,
-                          start_time,
-                          end_time, ):
+    def reset_with_values(self, current_soc, target_soc, start_time, end_time, ):
+
         self.current_soc = current_soc
         self.target_soc = target_soc
 
